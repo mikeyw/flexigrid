@@ -50,12 +50,12 @@ Similar in concept with the Ext Grid only its pure jQuery love, which makes it l
 
 Thanks to this guys for creating examples so other people can use Flexigrid, and made my life a little easier:
 
-A more complete PHP example by Kevin Kietel: (http://sanderkorvemaker.nl/test/flexigrid/)
+[A more complete PHP example by Kevin Kietel](http://sanderkorvemaker.nl/test/flexigrid/)
 
-CodeIgniter example by Armorfist: (http://flexigrid.eyeviewdesign.com/)
+[CodeIgniter example by Armorfist](http://flexigrid.eyeviewdesign.com/)
 
-ASP example by Synergiq: (http://jamesowers.co.uk/asp-tutorials/57/flexigrid-with-asp/)
+[ASP example by Synergiq](http://jamesowers.co.uk/asp-tutorials/57/flexigrid-with-asp/)
 
-Ruby on Rails example by Nick Fessel: (http://www.nickfessel.com/)
+[Ruby on Rails example by Nick Fessel](http://www.nickfessel.com/)
 
-ASP.NET example by Todd Smith : (http://www.codeproject.com/KB/aspnet/MVCFlexigrid.aspx)
+[ASP.NET example by Todd Smith](http://www.codeproject.com/KB/aspnet/MVCFlexigrid.aspx)
