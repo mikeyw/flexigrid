@@ -43,3 +43,25 @@ Similar in concept with the Ext Grid only its pure jQuery love, which makes it l
 * I'm planning to add an Editable and Resortable rows feature, as well as other cool GUI features.
 
 One of my main goal for the plugin is ultimately to keep it lightweight, maybe under 20k when compressed. Because otherwise you should probably stick with Ext Grid or YUI data table.
+
+Lightweight but rich data grid with resizable columns and a scrolling data to match the headers, plus an ability to connect to an xml based data source using Ajax to load the content. 
+ 
+Similar in concept with the Ext Grid only its pure jQuery love, which makes it light weight and follows the jQuery mantra of running with the least amount of configuration.
+
+Thanks to this guys for creating examples so other people can use Flexigrid, and made my life a little easier:
+
+A more complete PHP example by Kevin Kietel: http://sanderkorvemaker.nl/test/flexigrid/
+
+CodeIgniter example by Armorfist: http://flexigrid.eyeviewdesign.com/
+
+ASP example by Synergiq: http://jamesowers.co.uk/asp-tutorials/57/flexigrid-with-asp/
+
+Ruby on Rails example by Nick Fessel: http://www.nickfessel.com/
+
+ASP.NET example by Todd Smith : http://www.codeproject.com/KB/aspnet/MVCFlexigrid.aspx
+
+A lot of confusion was made on how to use a custom form with Flexigrid, so I made a semi official example.
+
+Custom form example: http://flexigrid.info/sample1.html
+
+Support Flexigrid!
