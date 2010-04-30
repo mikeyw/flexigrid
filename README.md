@@ -1,8 +1,15 @@
 # Flexigrid
-(from the [google code page](http://code.google.com/p/flexigrid/)
 
 by Paulo P. Marinas
 
+Also includes performance enhancements from
+http://docs.optivo.net/opensource/flexigrid/flexigrid_2008-07-14_performance_1.p
+atch/ mentioned in this thread http://markmail.org/message/c5bu2zybzaehygba.
+
+Also added some extra options to be able to disable the colresize, etc.
+Just look at the available options now.
+
+(from the [google code page](http://code.google.com/p/flexigrid/))
 Lightweight but rich data grid with resizable columns and a scrolling data to match the headers, plus an ability to connect to an xml based data source using Ajax to load the content.
 
 Similar in concept with the Ext Grid only its pure jQuery love, which makes it light weight and follows the jQuery mantra of running with the least amount of configuration.
