@@ -70,56 +70,53 @@
             data_downloaded: {},
             rePosDrag: function () {
 
-            var cdleft = 0 - this.hDiv.scrollLeft;
-            if (this.hDiv.scrollLeft>0) cdleft -= Math.floor(p.cgwidth/2);
-            $(g.cDrag).css({top:g.hDiv.offsetTop+1});
-            var cdpad = this.cdpad;
+                var cdleft = 0 - this.hDiv.scrollLeft;
+                if (this.hDiv.scrollLeft>0) cdleft -= Math.floor(p.cgwidth/2);
+                $(g.cDrag).css({top:g.hDiv.offsetTop + 1});
+                var cdpad = this.cdpad;
 
-            $('div',g.cDrag).hide();
+                $('div',g.cDrag).hide();
 
-            $('thead tr:first th:visible',this.hDiv).each
-                (
-                 function ()
-                    {
-                    var n = $('thead tr:first th:visible',g.hDiv).index(this);
-
-                    var cdpos = parseInt($('div',this).width());
-                    var ppos = cdpos;
-                    if (cdleft==0)
+                $('thead tr:first th:visible',this.hDiv).each
+                    (
+                     function ()
+                     {
+                        var n = $('thead tr:first th:visible',g.hDiv).index(this);
+                        var cdpos = parseInt($('div',this).width());
+                        var ppos = cdpos;
+                        if (cdleft==0)
                             cdleft -= Math.floor(p.cgwidth/2);
+                        cdpos = cdpos + cdleft + cdpad;
 
-                    cdpos = cdpos + cdleft + cdpad;
-
-                    $('div:eq('+n+')',g.cDrag).css({'left':cdpos+'px'}).show();
-
-                    cdleft = cdpos;
+                        $('div:eq('+n+')',g.cDrag).css({'left':cdpos+'px'}).show();
+                        cdleft = cdpos;
                     }
                 );
 
             },
             fixHeight: function (newH) {
-                    newH = false;
-                    if (!newH) newH = $(g.bDiv).height();
-                    var hdHeight = $(this.hDiv).height();
-                    $('div',this.cDrag).each(
-                        function ()
-                            {
-                                $(this).height(newH+hdHeight);
-                            }
-                    );
+                newH = false;
+                if (!newH) newH = $(g.bDiv).height();
+                var hdHeight = $(this.hDiv).height();
+                $('div',this.cDrag).each(
+                    function ()
+                        {
+                            $(this).height(newH+hdHeight);
+                        }
+                );
 
-                    var nd = parseInt($(g.nDiv).height());
+                var nd = parseInt($(g.nDiv).height());
 
-                    if (nd>newH)
-                        $(g.nDiv).height(newH).width(200);
-                    else
-                        $(g.nDiv).height('auto').width('auto');
+                if (nd>newH)
+                    $(g.nDiv).height(newH).width(200);
+                else
+                    $(g.nDiv).height('auto').width('auto');
 
-                    $(g.block).css({height:newH,marginBottom:(newH * -1)});
+                $(g.block).css({height:newH,marginBottom:(newH * -1)});
 
-                    var hrH = g.bDiv.offsetTop + newH;
-                    if (p.height != 'auto' && p.resizable) hrH = g.vDiv.offsetTop;
-                    $(g.rDiv).css({height: hrH});
+                var hrH = g.bDiv.offsetTop + newH;
+                if (p.height != 'auto' && p.resizable) hrH = g.vDiv.offsetTop;
+                $(g.rDiv).css({height: hrH});
 
             },
             dragStart: function (dragtype,e,obj) { //default drag function start
@@ -262,7 +259,7 @@
                     {
                         $(this.colCopy).remove();
                         if (this.dcolt != null)
-                            {
+                        {
 
 
                             if (this.dcoln>this.dcolt)
@@ -279,7 +276,7 @@
 
                             if (p.onDragCol) p.onDragCol(this.dcoln, this.dcolt);
 
-                            }
+                        }
 
                         this.dcol = null;
                         this.hset = null;
@@ -376,10 +373,10 @@
                 this.loading = false;
 
                 if (!data)
-                    {
+                {
                     $('.pPageStat',this.pDiv).html(p.errormsg);
                     return false;
-                    }
+                }
 
                 if (p.dataType=='xml')
                     p.total = +$('rows total',data).text();
