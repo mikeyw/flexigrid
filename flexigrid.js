@@ -24,6 +24,8 @@
              minwidth: 30, //min width of columns
              minheight: 80, //min height of columns
              resizable: true, //resizable table
+             colresizable: false,
+             reorderable: false, //All columns to be moved
              url: false, //ajax url
              method: 'POST', // data sending method
              dataType: 'xml', // type of data loaded
@@ -45,16 +47,17 @@
              qtype: '',
              nomsg: 'No items',
              minColToggle: 1, //minimum allowed column to be hidden
-             showToggleBtn: true, //show or hide column toggle popup
+             showToggleBtn: false, //show or hide column toggle popup
              hideOnSubmit: true,
-             autoload: true,
+             autoload: false,
              blockOpacity: 0.5,
-             onDragCol: false,
              onToggleCol: false,
              onChangeSort: false,
              onSuccess: false,
+             debug: true,
              onError: false,
-             onSubmit: false // using a custom populate function
+             onSubmit: false, // using a custom populate function
+                         prepareRequest: false // Could be used do modify the request data send to target with ajax method.
           }, p);
 
 
@@ -69,30 +72,33 @@
             hset : {},
             data_downloaded: {},
             rePosDrag: function () {
-
                 var cdleft = 0 - this.hDiv.scrollLeft;
-                if (this.hDiv.scrollLeft>0) cdleft -= Math.floor(p.cgwidth/2);
-                $(g.cDrag).css({top:g.hDiv.offsetTop + 1});
-                var cdpad = this.cdpad;
+                  if (this.hDiv.scrollLeft > 0) {
+                    cdleft -= Math.floor(p.cgwidth / 2);
+                  }
+                  $(g.cDrag).css({top:g.hDiv.offsetTop + 1});
+                  var cdpad = this.cdpad;
 
-                $('div',g.cDrag).hide();
-
-                $('thead tr:first th:visible',this.hDiv).each
-                    (
-                     function ()
-                     {
-                        var n = $('thead tr:first th:visible',g.hDiv).index(this);
-                        var cdpos = parseInt($('div',this).width());
-                        var ppos = cdpos;
-                        if (cdleft==0)
-                            cdleft -= Math.floor(p.cgwidth/2);
-                        cdpos = cdpos + cdleft + cdpad;
-
-                        $('div:eq('+n+')',g.cDrag).css({'left':cdpos+'px'}).show();
-                        cdleft = cdpos;
-                    }
-                );
-
+                  if (p.colresizable){
+                      // Select all possible drags and hide it. The selection is stored to a variable because
+                      // we will reuse it later while iterate through the header cells.
+                      var qdrags = $('div', g.cDrag);
+                      qdrags.hide();
+            
+                      // We do not use the regular each method of jQuery because we do need the index of the
+                      // header cell for other operation with the drags.
+                      var qheaders = $('thead tr:first th:visible', this.hDiv);
+                      for (var n = 0; n < qheaders.length; n++) {
+                          var cdpos = parseInt($('div', qheaders[n]).width());
+                          if (cdleft == 0) {
+                              cdleft -= Math.floor(p.cgwidth / 2);
+                          }
+                          cdpos = cdpos + cdleft + cdpad;
+                          // Select the drag which is equals to the index of the current header cell.
+                          $(qdrags[n]).css('left', cdpos + 'px').show();
+                          cdleft = cdpos;
+                       }
+                  }
             },
             fixHeight: function (newH) {
                 newH = false;
@@ -274,7 +280,6 @@
                             $(this.cdropright).remove();
                             this.rePosDrag();
 
-                            if (p.onDragCol) p.onDragCol(this.dcoln, this.dcolt);
 
                         }
 
@@ -366,22 +371,23 @@
             addData: function (data) { //parse data
                 this.data_downloaded = data;
 
-                if (p.preProcess)
+                if (p.preProcess) {
                     data = p.preProcess(data);
+                }
 
-                $('.pReload',this.pDiv).removeClass('loading');
-                this.loading = false;
-
-                if (!data)
-                {
+                if (!data) {
+                    // There is no data after loading. Interrupt the loading here,
+                    // set busy to to false and display an error message.
+                    g.setBusy(false);
                     $('.pPageStat',this.pDiv).html(p.errormsg);
                     return false;
                 }
 
-                if (p.dataType=='xml')
+                if (p.dataType=='xml') {
                     p.total = +$('rows total',data).text();
-                else
+                } else {
                     p.total = data.total;
+                }
 
                 if (p.total==0)
                     {
@@ -391,6 +397,8 @@
                     p.page = 1;
                     this.buildpager();
                     $('.pPageStat',this.pDiv).html(p.nomsg);
+                    // Deactivate the busy mode.
+                    g.setBusy(false);
                     return false;
                     }
 
@@ -403,134 +411,156 @@
 
                 this.buildpager();
 
-                //build new body
+                // Build new body...
                 var tbody = document.createElement('tbody');
+                // Select the body before. This is better because this selected jQuery object could be used more then one times in the next steps.
+                var qtbody = $(tbody);
 
-                if (p.dataType=='json')
-                {
-                    $.each
-                    (
-                     data.rows,
-                     function(i,row)
-                         {
-                            var tr = document.createElement('tr');
-                            if (i % 2 && p.striped) tr.className = 'erow';
-
-                            if (row.id) tr.id = 'row' + row.id;
-
-                            //add cell
-                            $('thead tr:first th',g.hDiv).each
-                            (
-                                 function ()
-                                    {
-
-                                        var td = document.createElement('td');
-                                        var idx = $(this).attr('axis').substr(3);
-                                        td.align = this.align;
-                                        td.innerHTML = row.cell[idx];
-                                        $(tr).append(td);
-                                        td = null;
-                                    }
-                            );
-
-
-                            if ($('thead',this.gDiv).length<1) //handle if grid has no headers
-                            {
-
-                                    for (idx=0;idx<cell.length;idx++)
-                                        {
-                                        var td = document.createElement('td');
-                                        td.innerHTML = row.cell[idx];
-                                        $(tr).append(td);
-                                        td = null;
-                                        }
-                            }
-
-                            $(tbody).append(tr);
-                            tr = null;
-                        }
-                    );
-
-                } else if (p.dataType=='xml') {
-
-                i = 1;
-
-                $("rows row",data).each
-                (
-
-                     function ()
-                        {
-
-                            i++;
-
-                            var tr = document.createElement('tr');
-                            if (i % 2 && p.striped) tr.className = 'erow';
-
-                            var nid =$(this).attr('id');
-                            if (nid) tr.id = 'row' + nid;
-
-                            nid = null;
-
-                            var robj = this;
-
-
-
-                            $('thead tr:first th',g.hDiv).each
-                            (
-                                 function ()
-                                    {
-
-                                        var td = document.createElement('td');
-                                        var idx = $(this).attr('axis').substr(3);
-                                        td.align = this.align;
-                                        td.innerHTML = $("cell:eq("+ idx +")",robj).text();
-                                        $(tr).append(td);
-                                        td = null;
-                                    }
-                            );
-
-
-                            if ($('thead',this.gDiv).length<1) //handle if grid has no headers
-                            {
-                                $('cell',this).each
-                                (
-                                     function ()
-                                        {
-                                        var td = document.createElement('td');
-                                        td.innerHTML = $(this).text();
-                                        $(tr).append(td);
-                                        td = null;
-                                        }
-                                );
-                            }
-
-                            $(tbody).append(tr);
-                            tr = null;
-                            robj = null;
-                        }
-                );
-
+                // If Debugging is enabled record the start time of the rendering process.
+                if (p.debug) {
+                    var startTime = new Date();
                 }
 
-                $('tr',t).unbind();
-                $(t).empty();
+                /**
+                 * This method is used to finalize the rendering of the data to the body if the grid list.
+                 * @return (void)
+                 */
+                function finalizeRendering() {
+                    var qt = $(t);
+                    // Clean the current body compleate and add the new generated body.
+                    $('tr', qt).unbind();
+                    qt.empty();
+                    qt.append(qtbody);
 
-                $(t).append(tbody);
-                this.addCellProp();
-                this.addRowProp();
+                    g.rePosDrag();
 
-                //this.fixHeight($(this.bDiv).height());
+                    // This is paranoid but set the variables back to null. It is better for debugging.
+                    tbody = null;
+                    data = null;
 
-                this.rePosDrag();
+                    // Call the onSuccess hook (if present).
+                    if (p.onSuccess) {
+                        p.onSuccess();
+                    }
 
-                tbody = null; data = null; i = null;
+                    // Deactivate the busy mode.
+                    g.setBusy(false);
 
-                if (p.onSuccess) p.onSuccess();
-                if (p.hideOnSubmit) $(g.block).remove();//$(t).show();
+                    if (p.debug && window.console && window.console.log) {
+                        // If debugging is enabled log the duration of this operation.
+                        var nowTime = new Date();
+                        console.log('Duration of rendering data of type "' + p.dataType + '": ' + (nowTime - startTime) + 'ms');
+                    }
+                }
 
-                this.hDiv.scrollLeft = this.bDiv.scrollLeft;
-                if ($.browser.opera) $(t).css('visibility','visible');
+                // We will need the header cell at this point more times.
+                // So we do better to store it not for further usages.
+                var headers = $('thead tr:first th',g.hDiv);
 
+                // What is going on here? Because of many rows we have to render, we do not
+                // iterate with a regular foreach method. We make a pseudo asynchron process with
+                // the setTimeout method. We do better to do this because in other way we will
+                // force a lagging of the whole browser. In the worst case the user will get a
+                // dialog box of an "endless looping javaScript".
+                if (p.dataType=='json') {
+                    // Prepare the looping parameters.
+                    var ji = 0;
+                    var row = null;
+
+                    function doJsonRow() {
+                        // Only if there are more rows we will render a next row.
+                        if (data.rows.length > ji) {
+                            row = data.rows[ji];
+                            // Paranoid I know but it possible that there is an array selected with
+                            // null entries.
+                            if (row) {
+                                var tr = document.createElement('tr');
+                                var qtr = $(tr);
+                                if (ji % 2 && p.striped) {
+                                    tr.className = 'erow';
+                                }
+                                if (row.id) {
+                                    tr.id = 'row' + row.id;
+                                }
+                                // Add each cell
+                                for (idx = 0; idx < row.cell.length; idx++) {
+                                    var td = document.createElement('td');
+                                    var th = idx < headers.length ? headers[idx] : null;
+                                    if (th) {
+                                        td.align = th.align;
+                                    }
+                                    qtr.append(td);
+                                    g.addCellProp(td, qtr, row.cell[idx], th);
+                                }
+                                qtbody.append(tr);
+                                g.addRowProp(qtr);
+                                // Prepare the next step.
+                                tr = null;
+                                ji++;
+                                setTimeout(doJsonRow, 1);
+                            } else {
+                                finalizeRendering();
+                            }
+                        } else {
+                            finalizeRendering();
+                        }
+                    }
+                    // Start the pseudo asynchron iteration.
+                    setTimeout(doJsonRow, 1);
+                } else if (p.dataType=='xml') {
+                    // Prepare the looping parameters.
+                    var index = 1;
+                    var xi = 0;
+                    var rows = $("rows row", data);
+
+                    function doXmlRow() {
+                        // Only if there are more rows we will render a next row.
+                        if (xi < rows.length) {
+                            var row = rows[xi];
+                            // Paranoid I know but it possible that there is an array selected with
+                            // null entries.
+                            if (row) {
+                                var qrow = $(row);
+                                index++;
+
+                                var tr = document.createElement('tr');
+                                var qtr = $(tr);
+                                if (index % 2 && p.striped) {
+                                    tr.className = 'erow';
+                                }
+                                var nid = qrow.attr('id');
+                                if (nid) {
+                                    tr.id = 'row' + nid;
+                                }
+                                nid = null;
+                                var cells = $('cell', row);
+                                // Add each cell
+                                for (idx = 0; idx < cells.length; idx++) {
+                                    var td = document.createElement('td');
+                                    var th = idx < headers.length ? headers[idx] : null;
+                                    if (th) {
+                                        td.align = th.align;
+                                    }
+                                    qtr.append(td);
+                                    g.addCellProp(td, qtr, $(cells[idx]).text(), th);
+                                }
+                                qtbody.append(tr);
+                                // Prepare the next step.
+                                tr = null;
+                                xi++;
+                                setTimeout(doXmlRow, 1);
+                            } else {
+                                finalizeRendering();
+                            }
+                        } else {
+                            finalizeRendering();
+                        }
+                    }
+                    // Start the pseudo asynchron iteration.
+                    setTimeout(doXmlRow, 1);
+                } else {
+                    throw new Error('DataType "' + p.dataType + '" could not be handled.');
+                }
             },
             changeSort: function(th) { //change sortorder
 
@@ -575,6 +605,50 @@
             $('.pPageStat',this.pDiv).html(stat);
 
             },
+            /**
+             * This method is used to control the grid busy state.
+             *
+             * @param busy if set to true the grid list will get a semi transparent layer, a loading message will be displayed and a spinner.
+             * If set to false this layer, spinner and message will be removed.
+             * @return (boolean) true if the state is changed.
+             */
+            setBusy: function (busy) {
+                var result = false;
+                if (busy) {
+                    if (!this.loading) {
+                        this.loading = true;
+                        $('.pPageStat',this.pDiv).html(p.procmsg);
+                        $('.pReload',this.pDiv).addClass('loading');
+                        $(g.block).css({top:g.bDiv.offsetTop});
+                        if (p.hideOnSubmit) {
+                            $(this.gDiv).prepend(g.block); //$(t).hide();
+                        }
+                        if ($.browser.opera) {
+                            $(t).css('visibility','hidden');
+                        }
+                        result = true;
+                    }
+                } else {
+                    if (this.loading) {
+                        var qstatus = $('.pPageStat',this.pDiv);
+                        if (qstatus.html() == p.procmsg) {
+                            $('.pPageStat',this.pDiv).text('');
+                        }
+                        $('.pReload',this.pDiv).removeClass('loading');
+                        if (p.hideOnSubmit) {
+                            $(g.block).remove(); //$(t).show();
+                        }
+                        g.hDiv.scrollLeft = g.bDiv.scrollLeft;
+                        if ($.browser.opera) {
+                            $(t).css('visibility','visible');
+                        }
+
+                        this.loading = false;
+                        result = true;
+                    }
+                }
+                return result;
+            },
             populate: function () { //get latest data
 
                 if (this.loading) return true;
@@ -585,24 +659,17 @@
                         if (!gh) return false;
                     }
 
-                this.loading = true;
                 if (!p.url) return false;
 
-                $('.pPageStat',this.pDiv).html(p.procmsg);
-
-                $('.pReload',this.pDiv).addClass('loading');
-
-                $(g.block).css({top:g.bDiv.offsetTop});
-
-                if (p.hideOnSubmit) $(this.gDiv).prepend(g.block); //$(t).hide();
-
-                if ($.browser.opera) $(t).css('visibility','hidden');
+                // Make this grid list busy for the user.
+                this.setBusy(true);
 
                 if (!p.newp) p.newp = 1;
 
                 if (p.page>p.pages) p.page = p.pages;
                 //var param = {page:p.newp, rp: p.rp, sortname: p.sortname, sortorder: p.sortorder, query: p.query, qtype: p.qtype};
-                var param = [
+                var data = [];
+                var params = [
                      { name : 'page', value : p.newp }
                     ,{ name : 'rp', value : p.rp }
                     ,{ name : 'sortname', value : p.sortname}
@@ -611,19 +678,42 @@
                     ,{ name : 'qtype', value : p.qtype}
                 ];
 
-                if (p.params)
-                    {
-                        for (var pi = 0; pi < p.params.length; pi++) param[param.length] = p.params[pi];
+                // Only add parameters to request data which are not null.
+                for (i in params) {
+                    var param = params[i];
+                    if (param && param.name && param.value) {
+                        data.push(param);
                     }
+                }
+                // If there are some additional parameters and each are not null add it to the request data.
+                if (p.params) {
+                    for (pi in p.params) {
+                        var current = p.params[pi];
+                        if (current && current.name && current.value) {
+                            data.push(current);
+                        }
+                    }
+                }
+                // Call prepareRequest hook.
+                if (p.prepareRequest) {
+                    p.prepareRequest(data);
+                }
 
-                    $.ajax({
-                       type: p.method,
-                       url: p.url,
-                       data: param,
-                       dataType: p.dataType,
-                       success: function(data){g.addData(data);},
-                       error: function(XMLHttpRequest, textStatus, errorThrown) { try { if (p.onError) p.onError(XMLHttpRequest, textStatus, errorThrown); } catch (e) {} }
-                     });
+                $.ajax({
+                   type: p.method,
+                   url: p.url,
+                   data: data,
+                   dataType: p.dataType,
+                   success: function(data){g.addData(data);},
+                   error: function(request,testStatus,errorThrown){ 
+                         // There is no data after loading. Interrupt the loading here,
+                         // set busy to to false and display an error message.
+                         g.setBusy(false);
+                         $('.pPageStat',this.pDiv).html($t.not_authorized);
+                         return false;
+                         //function(data) { try { if (p.onError) p.onError(data); } catch (e) {} }
+                   }
+                 });
             },
             doSearch: function () {
                 p.query = $('input[name=q]',g.sDiv).val();
@@ -660,52 +750,43 @@
                     this.populate();
 
             },
-            addCellProp: function ()
-            {
+            addCellProp: function (cell, prnt, innerHtml, pth) {
+                var tdDiv = document.createElement('div');
+                var qtdDiv = $(tdDiv);
+                var qcell = $(cell);
+                if (pth != null) {
+                    /*
+                    if (p.sortname == $(pth).attr('abbr') && p.sortname) {
+                        cell.className = 'sorted';
+                    }
+                    */
+                    qtdDiv.css({textAlign:pth.align,width: $('div:first', pth)[0].style.width});
 
-                    $('tbody tr td',g.bDiv).each
-                    (
-                        function ()
-                            {
-                                    var tdDiv = document.createElement('div');
-                                    var n = $('td',$(this).parent()).index(this);
-                                    var pth = $('th:eq('+n+')',g.hDiv).get(0);
+                    if (pth.hide) {
+                        qcell.css('display', 'none');
+                    }
+                }
 
-                                    if (pth!=null)
-                                    {
-                                    if (p.sortname==$(pth).attr('abbr')&&p.sortname)
-                                        {
-                                        this.className = 'sorted';
-                                        }
-                                     $(tdDiv).css({textAlign:pth.align,width: $('div:first',pth)[0].style.width});
+                if (p.nowrap == false) {
+                    qtdDiv.css('white-space', 'normal');
+                }
 
-                                     if (pth.hide) $(this).css('display','none');
+                if (!innerHtml || innerHtml == '') {
+                    innerHtml = '&nbsp;';
+                }
 
-                                     }
+                tdDiv.innerHTML = innerHtml;
 
-                                     if (p.nowrap==false) $(tdDiv).css('white-space','normal');
+                var pid = false;
+                if (prnt.id) {
+                    pid = prnt.id.substr(3);
+                }
 
-                                     if (this.innerHTML=='') this.innerHTML = '&nbsp;';
+                if (pth != null && pth.process) {
+                    pth.process(tdDiv, pid);
+                }
 
-                                     //tdDiv.value = this.innerHTML; //store preprocess value
-                                     tdDiv.innerHTML = this.innerHTML;
-
-                                     var prnt = $(this).parent()[0];
-                                     var pid = false;
-                                     if (prnt.id) pid = prnt.id.substr(3);
-
-                                     if (pth!=null)
-                                     {
-                                     if (pth.process) pth.process(tdDiv,pid);
-                                     }
-
-                                    $(this).empty().append(tdDiv).removeAttr('width'); //wrap content
-
-                                    //add editable event here 'dblclick'
-
-                            }
-                    );
-
+                qcell.empty().append(tdDiv).removeAttr('width');
             },
             getCellDim: function (obj) // get cell prop for editable event
             {
@@ -719,66 +800,42 @@
                 var pdt = parseInt($(obj).css('paddingTop'));
                 return {ht:ht,wt:wt,top:top,left:left,pdl:pdl, pdt:pdt, pht:pht, pwt: pwt};
             },
-            addRowProp: function()
-            {
-                    $('tbody tr',g.bDiv).each
-                    (
-                        function ()
-                            {
-                            $(this)
-                            .click(
-                                function (e)
-                                    {
-                                        var obj = (e.target || e.srcElement); if (obj.href || obj.type) return true;
-                                        $(this).toggleClass('trSelected');
-                                        if (p.singleSelect) $(this).siblings().removeClass('trSelected');
-                                    }
-                            )
-                            .mousedown(
-                                function (e)
-                                    {
-                                        if (e.shiftKey)
-                                        {
-                                        $(this).toggleClass('trSelected');
-                                        g.multisel = true;
-                                        this.focus();
-                                        $(g.gDiv).noSelect();
-                                        }
-                                    }
-                            )
-                            .mouseup(
-                                function ()
-                                    {
-                                        if (g.multisel)
-                                        {
-                                        g.multisel = false;
-                                        $(g.gDiv).noSelect(false);
-                                        }
-                                    }
-                            )
-                            .hover(
-                                function (e)
-                                    {
-                                    if (g.multisel)
-                                        {
-                                        $(this).toggleClass('trSelected');
-                                        }
-                                    },
-                                function () {}
-                            )
-                            ;
+            addRowProp: function(qrow) {
+                qrow.click(function (e) {
+                    var obj = (e.target || e.srcElement);
+                    if (obj.href || obj.type) {
+                        return true;
+                    }
+                    $(this).toggleClass('trSelected');
+                    if (p.singleSelect) {
+                        qrow.siblings().removeClass('trSelected');
+                    }
+                }).mousedown(function (e) {
+                    if (e.shiftKey) {
+                        $(this).toggleClass('trSelected');
+                        g.multisel = true;
+                        this.focus();
+                        $(g.gDiv).noSelect();
+                    }
+                }).mouseup(function () {
+                    if (g.multisel) {
+                        g.multisel = false;
+                        $(g.gDiv).noSelect(false);
+                    }
+                }).hover(function () {
+                    if (g.multisel) {
+                        $(this).toggleClass('trSelected');
+                    }
+                }, function () {
+                });
 
-                            if ($.browser.msie&&$.browser.version<7.0)
-                                {
-                                    $(this)
-                                    .hover(
-                                        function () { $(this).addClass('trOver'); },
-                                        function () { $(this).removeClass('trOver'); }
-                                    )
-                                    ;
-                                }
-                            }
-                    );
+                if ($.browser.msie && $.browser.version < 7.0) {
+                    qrow.hover(function () {
+                        $(this).addClass('trOver');
+                    }, function () {
+                        $(this).removeClass('trOver');
+                    });
+                }
 
 
             },
@@ -965,62 +1022,68 @@
                          thdiv.innerHTML = this.innerHTML;
 
                         $(this).empty().append(thdiv).removeAttr('width')
-                        .mousedown(function (e)
-                            {
+                        .mousedown(function (e) {
+                            if (p.reorderable){
                                 g.dragStart('colMove',e,this);
-                            })
+                            }
+                        })
                         .hover(
                             function(){
                                 if (!g.colresize&&!$(this).hasClass('thMove')&&!g.colCopy) $(this).addClass('thOver');
 
-                                if ($(this).attr('abbr')!=p.sortname&&!g.colCopy&&!g.colresize&&$(this).attr('abbr')) $('div',this).addClass('s'+p.sortorder);
+                                if ($(this).attr('abbr')!=p.sortname&&!g.colCopy&&!g.colresize&&$(this).attr('abbr')) 
+                                    $('div',this).addClass('s'+p.sortorder);
                                 else if ($(this).attr('abbr')==p.sortname&&!g.colCopy&&!g.colresize&&$(this).attr('abbr'))
-                                    {
+                                {
                                         var no = '';
                                         if (p.sortorder=='asc') no = 'desc';
                                         else no = 'asc';
                                         $('div',this).removeClass('s'+p.sortorder).addClass('s'+no);
-                                    }
+                                }
 
                                 if (g.colCopy)
-                                    {
+                                {
                                     var n = $('th',g.hDiv).index(this);
 
                                     if (n==g.dcoln) return false;
-
-
 
                                     if (n<g.dcoln) $(this).append(g.cdropleft);
                                     else $(this).append(g.cdropright);
 
                                     g.dcolt = n;
 
-                                    } else if (!g.colresize) {
+                                } else if (!g.colresize) {
 
                                     var nv = $('th:visible',g.hDiv).index(this);
                                     var onl = parseInt($('div:eq('+nv+')',g.cDrag).css('left'));
-                                    var nw = jQuery(g.nBtn).outerWidth();
+                                    var nw = parseInt($(g.nBtn).width()) + parseInt($(g.nBtn).css('borderLeftWidth'));
+                                    if(isNaN(nw)) nw = 0;
                                     nl = onl - nw + Math.floor(p.cgwidth/2);
 
-                                    $(g.nDiv).hide();$(g.nBtn).hide();
+                                    $(g.nDiv).hide();
+                                    $(g.nBtn).hide();
 
-                                    $(g.nBtn).css({'left':nl,top:g.hDiv.offsetTop}).show();
+                                    if(p.showToggleBtn){
+                                      $(g.nBtn).css({'left':nl,top:g.hDiv.offsetTop}).show();
+                                    }
 
                                     var ndw = parseInt($(g.nDiv).width());
 
                                     $(g.nDiv).css({top:g.bDiv.offsetTop});
 
-                                    if ((nl+ndw)>$(g.gDiv).width())
-                                        $(g.nDiv).css('left',onl-ndw+1);
-                                    else
-                                        $(g.nDiv).css('left',nl);
+                                    if(p.showToggleBtn){
+                                      if ((nl+ndw)>$(g.gDiv).width())
+                                          $(g.nDiv).css('left',onl-ndw+1);
+                                      else
+                                          $(g.nDiv).css('left',nl);
+                                    }
 
                                     if ($(this).hasClass('sorted'))
                                         $(g.nBtn).addClass('srtd');
                                     else
                                         $(g.nBtn).removeClass('srtd');
 
-                                    }
+                                }
 
                             },
                             function(){
@@ -1060,11 +1123,7 @@
             }
 
 
-        //add td properties
-        g.addCellProp();
-
-        //add row properties
-        g.addRowProp();
+                $('tbody', g.bDiv).hide();
 
         //set cDrag
 
@@ -1072,52 +1131,47 @@
 
         if (cdcol != null)
         {
-        g.cDrag.className = 'cDrag';
-        g.cdpad = 0;
-
-        g.cdpad += (isNaN(parseInt($('div',cdcol).css('borderLeftWidth'))) ? 0 : parseInt($('div',cdcol).css('borderLeftWidth')));
-        g.cdpad += (isNaN(parseInt($('div',cdcol).css('borderRightWidth'))) ? 0 : parseInt($('div',cdcol).css('borderRightWidth')));
-        g.cdpad += (isNaN(parseInt($('div',cdcol).css('paddingLeft'))) ? 0 : parseInt($('div',cdcol).css('paddingLeft')));
-        g.cdpad += (isNaN(parseInt($('div',cdcol).css('paddingRight'))) ? 0 : parseInt($('div',cdcol).css('paddingRight')));
-        g.cdpad += (isNaN(parseInt($(cdcol).css('borderLeftWidth'))) ? 0 : parseInt($(cdcol).css('borderLeftWidth')));
-        g.cdpad += (isNaN(parseInt($(cdcol).css('borderRightWidth'))) ? 0 : parseInt($(cdcol).css('borderRightWidth')));
-        g.cdpad += (isNaN(parseInt($(cdcol).css('paddingLeft'))) ? 0 : parseInt($(cdcol).css('paddingLeft')));
-        g.cdpad += (isNaN(parseInt($(cdcol).css('paddingRight'))) ? 0 : parseInt($(cdcol).css('paddingRight')));
-
-        $(g.bDiv).before(g.cDrag);
-
-        var cdheight = $(g.bDiv).height();
-        var hdheight = $(g.hDiv).height();
-
-        $(g.cDrag).css({top: -hdheight + 'px'});
-
-        $('thead tr:first th',g.hDiv).each
-            (
-                 function ()
-                    {
+            g.cDrag.className = 'cDrag';
+            g.cdpad = 0;
+    
+            g.cdpad += (isNaN(parseInt($('div',cdcol).css('borderLeftWidth'))) ? 0 : parseInt($('div',cdcol).css('borderLeftWidth')));
+            g.cdpad += (isNaN(parseInt($('div',cdcol).css('borderRightWidth'))) ? 0 : parseInt($('div',cdcol).css('borderRightWidth')));
+            g.cdpad += (isNaN(parseInt($('div',cdcol).css('paddingLeft'))) ? 0 : parseInt($('div',cdcol).css('paddingLeft')));
+            g.cdpad += (isNaN(parseInt($('div',cdcol).css('paddingRight'))) ? 0 : parseInt($('div',cdcol).css('paddingRight')));
+            g.cdpad += (isNaN(parseInt($(cdcol).css('borderLeftWidth'))) ? 0 : parseInt($(cdcol).css('borderLeftWidth')));
+            g.cdpad += (isNaN(parseInt($(cdcol).css('borderRightWidth'))) ? 0 : parseInt($(cdcol).css('borderRightWidth')));
+            g.cdpad += (isNaN(parseInt($(cdcol).css('paddingLeft'))) ? 0 : parseInt($(cdcol).css('paddingLeft')));
+            g.cdpad += (isNaN(parseInt($(cdcol).css('paddingRight'))) ? 0 : parseInt($(cdcol).css('paddingRight')));
+    
+            $(g.bDiv).before(g.cDrag);
+    
+            var cdheight = $(g.bDiv).height();
+            var hdheight = $(g.hDiv).height();
+    
+            $(g.cDrag).css({top: -hdheight + 'px'});
+    
+            if (p.colresizable){
+                $('thead tr:first th',g.hDiv).each(function () {
                         var cgDiv = document.createElement('div');
                         $(g.cDrag).append(cgDiv);
                         if (!p.cgwidth) p.cgwidth = $(cgDiv).width();
-                        $(cgDiv).css({height: cdheight + hdheight})
-                        .mousedown(function(e){g.dragStart('colresize',e,this);})
-                        ;
+                        $(cgDiv).css({height: cdheight + hdheight});
+                        $(cgDiv).mousedown(function(e){ g.dragStart('colresize',e,this); });
                         if ($.browser.msie&&$.browser.version<7.0)
                         {
                             g.fixHeight($(g.gDiv).height());
-                            $(cgDiv).hover(
-                                function ()
-                                {
-                                g.fixHeight();
+                            $(cgDiv).hover(function () {
+                                    g.fixHeight();
                                 $(this).addClass('dragging')
-                                },
-                                function () { if (!g.colresize) $(this).removeClass('dragging') }
+                            },
+                            function () { if (!g.colresize) $(this).removeClass('dragging') }
                             );
                         }
-                    }
-            );
-
-        //g.rePosDrag();
-
+                    });
+    
+                g.rePosDrag();
+    
+            }
         }
 
 
@@ -1156,7 +1210,7 @@
         g.pDiv.className = 'pDiv';
         g.pDiv.innerHTML = '<div class="pDiv2"></div>';
         $(g.bDiv).after(g.pDiv);
-        var html = ' <div class="pGroup"> <div class="pFirst pButton"><span></span></div><div class="pPrev pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pcontrol">'+p.pagetext+' <input type="text" size="4" value="1" /> '+p.outof+' <span> 1 </span></span></div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pNext pButton"><span></span></div><div class="pLast pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pReload pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pPageStat"></span></div>';
+        var html = ' <div class="pGroup"> <div class="pFirst pButton"><span></span></div><div class="pPrev pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pcontrol">'+ $t.page + ' <input type="text" size="4" value="1" /> ' + $t.of + ' <span> 1 </span></span></div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pNext pButton"><span></span></div><div class="pLast pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pReload pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pPageStat"></span></div>';
         $('div',g.pDiv).html(html);
 
         $('.pReload',g.pDiv).click(function(){g.populate()});
@@ -1214,7 +1268,7 @@
 
                 if (p.qtype=='') p.qtype = sitems[0].name;
 
-                $(g.sDiv).append("<div class='sDiv2'>"+p.findtext+" <input type='text' size='30' name='q' class='qsbox' /> <select name='qtype'>"+sopt+"</select> <!--input type='button' value='Clear' /--></div>");
+                $(g.sDiv).append("<div class='sDiv2'>Quick Search <input type='text' size='30' name='q' class='qsbox' /> <select name='qtype'>"+sopt+"</select> <input type='button' value='Clear' /></div>");
 
                 $('input[name=q],select[name=qtype]',g.sDiv).keydown(function(e){if(e.keyCode==13) g.doSearch()});
                 $('input[value=Clear]',g.sDiv).click(function(){$('input[name=q]',g.sDiv).val(''); p.query = ''; g.doSearch(); });
@@ -1384,11 +1438,74 @@
         t.p = p;
         t.grid = g;
 
-        // load data
-        if (p.url&&p.autoload)
-            {
+        // Load data if possible and enabled.
+        if (p.url && p.autoload) {
             g.populate();
+        } else {
+            // If Debugging is enabled record the start time of the rendering process.
+            if (p.debug) {
+                var startTime = new Date();
             }
+            // Make this grid list busy for the user.
+            g.setBusy(true);
+
+            /**
+             * This method is used to finalize the rendering of the data to the body if the grid list.
+             * @return (void)
+             */
+            function finalizeRendering() {
+                g.setBusy(false);
+                $('tbody', g.bDiv).show();
+
+                if (p.debug && window.console && window.console.log) {
+                    var nowTime = new Date();
+                    console.log('Duration of rendering data of type "inlineHtml": ' + (nowTime - startTime) + 'ms');
+                }
+            }
+
+            // Add tr and td properties
+
+            // What is going on here? Because of many rows we have to render, we do not
+            // iterate with a regular foreach method. We make a pseudo asynchron process with
+            // the setTimeout method. We do better to do this because in other way we will
+            // force a lagging of the whole browser. In the worst case the user will get a
+            // dialog box of an "endless looping javaScript".
+
+            // Set initial properties for rendering the data.
+            var qth = $('thead tr:first th',g.hDiv);
+            var rows = $('tbody tr', g.bDiv);
+            var rowIndex = 0;
+            function doRow() {
+                // Only if there are more rows we will render a next row.
+                if (rowIndex < rows.length) {
+                    var tr = rows[rowIndex];
+                    // Paranoid I know but it possible that there is an array selected with
+                    // null entries.
+                    if (tr) {
+                        var qtr = $(tr);
+                        var i = 0;
+                        $('td', tr).each(function() {
+                            var header = false;
+                            if (qth.length > i) {
+                                header = qth[i] || false;
+                            }
+                            g.addCellProp(this, tr, this.innerHTML, header);
+                            i++;
+                        });
+                        g.addRowProp(qtr);
+                        // Prepare the next step.
+                        rowIndex++;
+                        setTimeout(doRow, 1);
+                    } else {
+                        finalizeRendering();
+                    }
+                } else {
+                    finalizeRendering();
+                }
+            }
+            // Start the pseudo asynchron iteration.
+            setTimeout(doRow, 1);
+        }
 
         return t;
 
@@ -1435,6 +1552,14 @@
 
     }; //end flexOptions
 
+        $.fn.flexGetOptions = function() { // function to get data to grid
+              var options = null;
+              this.each( function() {
+                  if (this.grid) { options = this.p; }
+              });
+              return options;
+        };
+
     $.fn.flexToggleCol = function(cid,visible) { // function to reload grid
 
         return this.each( function() {
@@ -1443,13 +1568,13 @@
 
     }; //end flexToggleCol
 
-    $.fn.flexGetData = function() { // function to get data to grid
-        var data = null;
-        this.each( function() {
-            if (this.grid) { data = this.grid.data_downloaded; }
-        });
-        return data;
-    };
+        $.fn.flexGetData = function() { // function to get data to grid
+              var data = null;
+              this.each( function() {
+                  if (this.grid) { data = this.grid.data_downloaded; }
+              });
+              return data;
+        };
 
     $.fn.flexAddData = function(data) { // function to add data to grid
 
