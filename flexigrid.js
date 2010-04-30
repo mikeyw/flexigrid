@@ -67,6 +67,7 @@
         //create grid class
         var g = {
             hset : {},
+            data_downloaded: {},
             rePosDrag: function () {
 
             var cdleft = 0 - this.hDiv.scrollLeft;
@@ -366,6 +367,7 @@
                     this.rePosDrag();
             },
             addData: function (data) { //parse data
+                this.data_downloaded = data;
 
                 if (p.preProcess)
                     data = p.preProcess(data);
@@ -1443,6 +1445,14 @@
             });
 
     }; //end flexToggleCol
+
+    $.fn.flexGetData = function() { // function to get data to grid
+        var data = null;
+        this.each( function() {
+            if (this.grid) { data = this.grid.data_downloaded; }
+        });
+        return data;
+    };
 
     $.fn.flexAddData = function(data) { // function to add data to grid
 
