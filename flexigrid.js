@@ -705,14 +705,14 @@
                    data: data,
                    dataType: p.dataType,
                    success: function(data){g.addData(data);},
-                   error: function(request,testStatus,errorThrown){ 
-                         // There is no data after loading. Interrupt the loading here,
-                         // set busy to to false and display an error message.
-                         g.setBusy(false);
-                         $('.pPageStat',this.pDiv).html($t.not_authorized);
-                         return false;
-                         //function(data) { try { if (p.onError) p.onError(data); } catch (e) {} }
-                   }
+		   error: function(XMLHttpRequest, textStatus, errorThrown) { 
+		     try { 
+                       g.setBusy(false);
+		       if (p.onError) 
+		         p.onError(XMLHttpRequest, textStatus, errorThrown); 
+	             } catch (e) {} 
+                     return false;
+		   }
                  });
             },
             doSearch: function () {
@@ -1210,7 +1210,7 @@
         g.pDiv.className = 'pDiv';
         g.pDiv.innerHTML = '<div class="pDiv2"></div>';
         $(g.bDiv).after(g.pDiv);
-        var html = ' <div class="pGroup"> <div class="pFirst pButton"><span></span></div><div class="pPrev pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pcontrol">'+ $t.page + ' <input type="text" size="4" value="1" /> ' + $t.of + ' <span> 1 </span></span></div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pNext pButton"><span></span></div><div class="pLast pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pReload pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pPageStat"></span></div>';
+        var html = ' <div class="pGroup"> <div class="pFirst pButton"><span></span></div><div class="pPrev pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pcontrol">'+ p.pagetext + ' <input type="text" size="4" value="1" /> ' + p.outof + ' <span> 1 </span></span></div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pNext pButton"><span></span></div><div class="pLast pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"> <div class="pReload pButton"><span></span></div> </div> <div class="btnseparator"></div> <div class="pGroup"><span class="pPageStat"></span></div>';
         $('div',g.pDiv).html(html);
 
         $('.pReload',g.pDiv).click(function(){g.populate()});
