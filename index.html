@@ -4,27 +4,40 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Flexigrid</title>
 <link rel="stylesheet" href="style.css" />
-<link rel="stylesheet" type="text/css" href="css/flexigrid/flexigrid.css">
+<link rel="stylesheet" type="text/css" href="css/flexigrid/flexigrid.css"/>
 <script type="text/javascript" src="lib/jquery/jquery.js"></script>
 <script type="text/javascript" src="flexigrid.js"></script>
+<style type="text/css">
+.flexigrid div.fbutton .add {
+	background: url(css/images/add.png) no-repeat center left;
+}	
+   
+.flexigrid div.fbutton .delete {
+	background: url(css/images/close.png) no-repeat center left;
+}	
+</style>
+
 </head>
 
 <body>
-
-<img src="flash.png" alt="Flexigrid" width="960" height="483" usemap="#Map" style="visibility:hidden" onload="$(this).css({visibility:'visible',display:'none'}).fadeIn('slow');" title="Flexigrid" border="0" />
-<map name="Map" id="Map"><area shape="rect" coords="671,29,853,72" href="flexigrid.zip" alt="Download" />
+<div>
+<img src="flash.png" alt="Flexigrid" id="topLogo"
+	usemap="#Map"
+	style="visibility:hidden;width:960px;height:483px;border:0" title="Flexigrid"/>
+<map name="Map" id="Map">
+	<area shape="rect" coords="671,29,853,72" href="flexigrid.zip" alt="Download" />
 </map>
 
 <h1 class="title" style="display: none"><strong>Flexigrid</strong> for jQuery (beta) <span style="font-size:12px">by Paulo P. Marinas</span></h1>
 
 <div class="update" style="height: auto">
-<b class="top">What is it?</b>
+<strong class="top">What is it?</strong>
 
 <p>Lightweight but rich data grid with resizable columns and a scrolling data to match the headers, plus an ability to connect to an xml based data source using Ajax to load the content. </p>
 <p>Similar in concept with the Ext Grid only its pure jQuery love, which makes it light weight and follows the jQuery mantra of running with the least amount of configuration.</p>
-<p><b>Features</b></p>
+<p><strong>Features</strong></p>
 
-<ul type="square">
+<ul>
 <li>Resizable columns</li>
 <li>Resizable height and width</li>
 <li>Sortable column headers</li>
@@ -43,14 +56,14 @@
 <br />
 <div class="update2">
   <p>1.0b3 Released  14 July 2008</p>
-    <p align="right">
-    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paulopmx@gmail.com" target="_blank" class="beer">Buy me a coffee here</a>
+    <p style="text-align:right">
+    <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&amp;business=paulopmx@gmail.com" onclick="this.target='_blank'" class="beer">Buy me a coffee here</a>
     </p>
 </div>
 <br />
 <div class="update" style="height: auto">
-<b class="top">What's New Version 1.0b3</b>
-    <ul type="square">
+<strong class="top">What's New Version 1.0b3</strong>
+    <ul>
     	<li>Fixed paging problem on multiple instances</li>
     	<li>Mootools and Prototype noConflict() compatibility problems fixed</li>
     	<li>New onError event on ajax interaction, (it will pass what the server said in a variable called data), allowing you to handle server problems</li>
@@ -61,8 +74,8 @@
         <li>IE6 Support fixes</li>
         <li>CSS Bug fixes</li>
     </ul>
-<b class="top">What's New Version 1.0b2</b>
-    <ul type="square">
+<strong class="top">What's New Version 1.0b2</strong>
+    <ul>
     	<li>Resizable Width</li>
         <li>JSON Support</li>
         <li>Toolbar</li>
@@ -74,15 +87,15 @@
     </ul>
 
 </div>
-<br />
-    <p>
-    	As I still don't have time to build a full pledge support or community site, which I'm planning to, these are usually the questions I receive:
-    </p>
-<div class="update">
-    
-    <b class="top">FAQ</b>
+
+<p>
+	Support can be found at <a href="http://groups.google.com/group/flexigrid/">http://groups.google.com/group/flexigrid/</a>.
+</p>
+
+<div class="update">    
+    <strong class="top">FAQ</strong>
     <ol>
-    	<li>Paulo this is awesome. How can I show my appreciation?<br />Answer: Normally people say buy me a beer, but it slows me down. <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=paulopmx@gmail.com" target="_blank" class="beer">Buy me a coffee here</a><br /><br /></li> 
+    	<li>Paulo this is awesome. How can I show my appreciation?<br />Answer: Normally people say buy me a beer, but it slows me down. <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&amp;business=paulopmx@gmail.com" onclick="this.target='_blank'" class="beer">Buy me a coffee here</a><br /><br /></li> 
     	<li>Paulo this is awesome. How can I contact you? <br />Answer: <a href="http://www.webplicity.net/contact">http://www.webplicity.net/contact</a><br /><br /></li>
         <li>Do you have a forum where I can post a message? <br />Answer: Not yet. But I hang out here <a href="http://codeigniter.com/forums/viewthread/75326/">http://codeigniter.com/forums/viewthread/75326/</a><br /><br /></li>
         <li>What browsers does Flexigrid support? <br />Answer: Currently I'm testing only for IE6/IE7,Firefox 2,Opera 9.x,Safari 3.0<br /><br /></li>
@@ -93,27 +106,26 @@
         <li>When are you going to make a decent site with support and a community? <br />Answer: Maybe in a month or two, fact is I have a day job. I'm considering building a community if I get enough support.<br /><br /></li>
    	</ol>
 </div>
-<br />
 
 <div class="update">
-<b class="top">Files you need</b>
-<ul type="square">
-<li>Of course you need the <a href="http://www.jquery.com">jQuery script</a></li>
-<li><a href="flexigrid.zip">and the FlexiGrid Plugin Pack(32K)</a> which includes the js, css, and images you need to run the Flexigrid</li>
+<strong class="top">Files you need</strong>
+<ul>
+	<li>Of course you need the <a href="http://www.jquery.com">jQuery script</a></li>
+	<li><a href="flexigrid.zip">and the FlexiGrid Plugin Pack(32K)</a> which includes the js, css, and images you need to run the Flexigrid</li>
 </ul>
 </div>
 <br />
 <div class="update">
-<b class="top">How to use</b>
+<strong class="top">How to use</strong>
 <p>
-	My appologies, but no time to make a thorough guide on how to use it yet, but I did make some examples below.
+	My apologies, but no time to make a thorough guide on how to use it yet, but I did make some examples below.
 </p>
 <p>
 	For the Third example you need to generate an 
     XML file with a very specific format, just use the same format to generate an XML file using any backend programming language.
 </p>
 <p>
-	<a href="post.php" target="_blank">The sample xml file is here</a>
+	<a href="post.php" onclick="this.target='_blank'">The sample xml file is here</a>
 </p>
 <p>
 	And due to consistent public demand. My sample PHP code for post.php. Please don't forget to change hostname, username, password and dbname.
@@ -259,7 +271,7 @@ echo $json;</p>
 
 <br />
 
-<b>Example 1</b>
+<strong>Example 1</strong>
 <p>
 The most basic example with the zero configuration, with a table converted into flexigrid 
 (<a href="#" onclick="$(this).parent().next().toggle(); return false;">Show sample code</a>)
@@ -270,10 +282,10 @@ The most basic example with the zero configuration, with a table converted into 
 <table class="flexme1">
 	<thead>
     		<tr>
-            	<th width="100">Col 1</th>
-            	<th width="100">Col 2</th>
-            	<th width="100">Col 3 is a long header name</th>
-            	<th width="300">Col 4</th>
+            	<th style="width:100px">Col 1</th>
+            	<th style="width:100px">Col 2</th>
+            	<th style="width:100px">Col 3 is a long header name</th>
+            	<th style="width:300px">Col 4</th>
             </tr>
     </thead>
     <tbody>
@@ -354,7 +366,7 @@ The most basic example with the zero configuration, with a table converted into 
 </table>
 <br />
 
-<b>Example 2</b>
+<strong>Example 2</strong>
 <p>
 Table converted into flexigrid with height, and width set to auto, stripes remove.
 (<a href="#" onclick="$(this).parent().next().toggle(); return false;">Show sample code</a>)
@@ -365,10 +377,10 @@ Table converted into flexigrid with height, and width set to auto, stripes remov
 <table class="flexme2">
 	<thead>
     		<tr>
-            	<th width="100">Col 1</th>
-            	<th width="100">Col 2</th>
-            	<th width="100">Col 3 is a long header name</th>
-            	<th width="300">Col 4</th>
+            	<th style="width:100px">Col 1</th>
+            	<th style="width:100px">Col 2</th>
+            	<th style="width:100px">Col 3 is a long header name</th>
+            	<th style="width:300px">Col 4</th>
             </tr>
     </thead>
     <tbody>
@@ -412,28 +424,12 @@ Table converted into flexigrid with height, and width set to auto, stripes remov
 </table>
 <br />
 
-<b>Example 3</b>
+<strong>Example 3</strong>
 <p>
 Flexigrid with a dynamic data, paging, search, toolbar, and connected to an JSON file.
 (<a href="#" onclick="$(this).parent().next().toggle(); return false;">Show sample code</a>)
 </p>
 <div class="code">
-
-	<style>
-        
-        .flexigrid div.fbutton .add
-            {
-                background: url(css/images/add.png) no-repeat center left;
-            }	
-    
-        .flexigrid div.fbutton .delete
-            {
-                background: url(css/images/close.png) no-repeat center left;
-            }	
-    
-    </style>
-
-
 	<pre>
 			$("#flex1").flexigrid
 			(
@@ -470,29 +466,14 @@ Flexigrid with a dynamic data, paging, search, toolbar, and connected to an JSON
 	</pre>
 </div>
 
-<style>
-	
-	.flexigrid div.fbutton .add
-		{
-			background: url(css/images/add.png) no-repeat center left;
-		}	
-
-	.flexigrid div.fbutton .delete
-		{
-			background: url(css/images/close.png) no-repeat center left;
-		}	
-
-</style>
-
-
 <table id="flex1" style="display:none"></table>
 
 
 <script type="text/javascript">
-
-
-
-			$('.flexme1').flexigrid();
+$(document).ready(function(){
+	$("#topLogo").css({visibility:'visible',display:'none'}).fadeIn('slow');
+});
+$('.flexme1').flexigrid();
 			$('.flexme2').flexigrid({height:'auto',striped:false});
 
 			$("#flex1").flexigrid
@@ -528,67 +509,55 @@ Flexigrid with a dynamic data, paging, search, toolbar, and connected to an JSON
 			}
 			);
 			
-			function test(com,grid)
-			{
-				if (com=='Delete')
-					{
-						confirm('Delete ' + $('.trSelected',grid).length + ' items?')
-					}
-				else if (com=='Add')
-					{
-						alert('Add New Item');
-					}			
+			function test(com, grid){
+				if (com=='Delete'){
+					confirm('Delete ' + $('.trSelected',grid).length + ' items?')
+				}
+				else if (com=='Add'){
+					alert('Add New Item');
+				}			
 			}
 
-			$("#flex2").flexigrid
-			(
-			{
-			url: 'post2.php',
-			dataType: 'json',
-			colModel : [
-				{display: 'ISO', name : 'iso', width : 40, sortable : true, align: 'center'},
-				{display: 'Name', name : 'name', width : 180, sortable : true, align: 'left'},
-				{display: 'Printable Name', name : 'printable_name', width : 120, sortable : true, align: 'left'},
-				{display: 'ISO3', name : 'iso3', width : 130, sortable : true, align: 'left', hide: true},
-				{display: 'Number Code', name : 'numcode', width : 80, sortable : true, align: 'right'}
-				],
-			buttons : [
-				{name: 'Add', bclass: 'add', onpress : test},
-				{name: 'Delete', bclass: 'delete', onpress : test},
-				{separator: true}
-				],
-			searchitems : [
-				{display: 'ISO', name : 'iso'},
-				{display: 'Name', name : 'name', isdefault: true}
-				],
-			sortname: "iso",
-			sortorder: "asc",
-			usepager: true,
-			title: 'Countries',
-			useRp: true,
-			rp: 15,
-			showTableToggleBtn: true,
-			width: 700,
-			height: 200
-			}
+			$("#flex2").flexigrid(
+				{
+				url: 'post2.php',
+				dataType: 'json',
+				colModel : [
+					{display: 'ISO', name : 'iso', width : 40, sortable : true, align: 'center'},
+					{display: 'Name', name : 'name', width : 180, sortable : true, align: 'left'},
+					{display: 'Printable Name', name : 'printable_name', width : 120, sortable : true, align: 'left'},
+					{display: 'ISO3', name : 'iso3', width : 130, sortable : true, align: 'left', hide: true},
+					{display: 'Number Code', name : 'numcode', width : 80, sortable : true, align: 'right'}
+					],
+				buttons : [
+					{name: 'Add', bclass: 'add', onpress : test},
+					{name: 'Delete', bclass: 'delete', onpress : test},
+					{separator: true}
+					],
+				searchitems : [
+					{display: 'ISO', name : 'iso'},
+					{display: 'Name', name : 'name', isdefault: true}
+					],
+				sortname: "iso",
+				sortorder: "asc",
+				usepager: true,
+				title: 'Countries',
+				useRp: true,
+				rp: 15,
+				showTableToggleBtn: true,
+				width: 700,
+				height: 200
+				}
 			);
 
-		$('b.top').click
+		$('strong.top').click
 		(
 			function ()
 				{
 					$(this).parent().toggleClass('fh');
 				}
-		);
-	
+		);	
 </script>
-
-<script src="http://www.google-analytics.com/urchin.js" type="text/javascript">
-</script>
-<script type="text/javascript">
-_uacct = "UA-3875581-1";
-urchinTracker();
-</script>
-
+</div>
 </body>
 </html>

@@ -1,5 +1,17 @@
-<?
+<?php
+$page = $_POST['page'];
+$rp = $_POST['rp'];
+$sortname = $_POST['sortname'];
+$sortorder = $_POST['sortorder'];
+$query = $_POST['query'];
+$qtype = $_POST['qtype'];
+if (!$sortname) $sortname = 'name';
+if (!$sortorder) $sortorder = 'desc';
+if (!$page) $page = 1;
+if (!$rp) $rp = 10;
 
+/* -- To use the SQL, remove this block
+$usingSQL = true; 
 function runSQL($rsql) {
 
 	$db['default']['hostname'] = "localhost";
@@ -16,7 +28,6 @@ function runSQL($rsql) {
 	
 	$base_url = "http://".$_SERVER['HTTP_HOST'];
 	$base_url .= str_replace(basename($_SERVER['SCRIPT_NAME']),"",$_SERVER['SCRIPT_NAME']);
-	if (strpos($base_url,'webplicity.net')) $active_group = "live";
 
 	$connect = mysql_connect($db[$active_group]['hostname'],$db[$active_group]['username'],$db[$active_group]['password']) or die ("Error: could not connect to database");
 	$db = mysql_select_db($db[$active_group]['database']);
@@ -33,58 +44,57 @@ function countRec($fname,$tname) {
 		return $row[0];
 	}	
 }
-$page = $_POST['page'];
-$rp = $_POST['rp'];
-$sortname = $_POST['sortname'];
-$sortorder = $_POST['sortorder'];
-
-if (!$sortname) $sortname = 'name';
-if (!$sortorder) $sortorder = 'desc';
 
 $sort = "ORDER BY $sortname $sortorder";
-
-if (!$page) $page = 1;
-if (!$rp) $rp = 10;
-
 $start = (($page-1) * $rp);
 
 $limit = "LIMIT $start, $rp";
 
-$query = $_POST['query'];
-$qtype = $_POST['qtype'];
-
 $where = "";
-if ($query) $where = " WHERE $qtype LIKE '%$query%' ";
+if ($query) $where = " WHERE $qtype LIKE '%".mysql_real_escape_string($query)."%' ";
 
 $sql = "SELECT iso,name,printable_name,iso3,numcode FROM country $where $sort $limit";
 $result = runSQL($sql);
 
 $total = countRec("iso","country $where");
-
-header("Expires: Mon, 26 Jul 1997 05:00:00 GMT" ); 
-header("Last-Modified: " . gmdate( "D, d M Y H:i:s" ) . "GMT" ); 
-header("Cache-Control: no-cache, must-revalidate" ); 
-header("Pragma: no-cache" );
-header("Content-type: text/x-json");
-$json = "";
-$json .= "{\n";
-$json .= "page: $page,\n";
-$json .= "total: $total,\n";
-$json .= "rows: [";
-$rc = false;
-while ($row = mysql_fetch_array($result)) {
-	if ($rc) $json .= ",";
-	$json .= "\n{";
-	$json .= "id:'".$row['iso']."',";
-	$json .= "cell:['".$row['iso']."'";
-	$json .= ",'".addslashes($row['name'])."'";
-	$json .= ",'".addslashes($row['printable_name'])."'";
-	$json .= ",'".addslashes($row['iso3'])."'";
-	$json .= ",'".$row['numcode']."']";
-	$json .= "}";
-	$rc = true;		
+*/
+if(!isset($usingSQL)){
+	include dirname(__FILE__).'/countryArray.inc.php';
+	if($qtype && $query){
+		$query = strtolower(trim($query));
+		foreach($rows AS $key => $row){
+			if(strpos(strtolower($row[$qtype]),$query) === false){
+				unset($rows[$key]);
+			}
+		}
+	}
+	//Make PHP handle the sorting
+	$sortArray = array();
+	foreach($rows AS $key => $row){
+		$sortArray[$key] = $row[$sortname];		
+	}
+	$sortMethod = SORT_ASC;
+	if($sortorder == 'desc'){
+		$sortMethod = SORT_DESC;
+	}
+	array_multisort($sortArray, $sortMethod, $rows);
+	$total = count($rows);
+	$rows = array_slice($rows,($page-1)*$rp,$rp);
 }
-$json .= "]\n";
-$json .= "}";
-echo $json;
-?>
+header("Content-type: application/json");
+$jsonData = array('page'=>$page,'total'=>$total,'rows'=>array());
+foreach($rows AS $row){
+	//If cell's elements have named keys, they must match column names
+	//Only cell's with named keys and matching columns are order independent. 
+	$entry = array('id'=>$row['iso'],
+		'cell'=>array(
+			'name'=>$row['name'],
+			'iso'=>$row['iso'],
+			'printable_name'=>$row['printable_name'],
+			'iso3'=>$row['iso3'],
+			'numcode'=>$row['numcode']
+		),
+	);
+	$jsonData['rows'][] = $entry;
+}
+echo json_encode($jsonData);
