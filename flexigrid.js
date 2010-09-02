@@ -399,6 +399,9 @@
                     $('.pPageStat',this.pDiv).html(p.nomsg);
                     // Deactivate the busy mode.
                     g.setBusy(false);
+                    // Call the onSuccess hook (if present).
+                    if (p.onSuccess) {
+                        p.onSuccess();
                     return false;
                     }
 
